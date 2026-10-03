@@ -97,7 +97,7 @@ details.sv{background:var(--surface);border-radius:14px;padding:10px 14px;font-s
 details.sv summary{cursor:pointer;font-weight:700;padding:6px 0}
 details.sv .row{margin-top:8px}
 details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px solid var(--line);background:var(--ground);color:var(--text);font-size:15px;padding:0 10px}
-.jrow{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:center}
+.jrow{display:grid;grid-template-columns:132px minmax(0,1fr);gap:12px;align-items:center}
 #bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--ground);border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 24px rgba(0,0,0,.5)}
 .stats{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
 .limit{width:52px;height:52px;flex:none;border-radius:50%;background:#fff;border:5px solid #D23B40;display:flex;align-items:center;justify-content:center;color:#111;font-size:19px;font-weight:700}
@@ -278,6 +278,17 @@ Route.prototype.build=function(){
   });
   if(!man.length || man[man.length-1].type!=='arrive') man.push({type:'arrive',mod:'',s:r.L,loc:r.coords[r.coords.length-1],spoken:{},name:''});
   man[man.length-1].s=r.L;
+  man.forEach(function(m){
+    if(m.type==='arrive'||m.type==='fork'||m.type==='off ramp'||m.type==='on ramp'||m.type==='merge'||m.type.indexOf('round')>=0||m.type.indexOf('rotary')>=0) return;
+    var bin=brg(r.at(Math.max(0,m.s-35)).p, r.at(Math.max(0,m.s-3)).p), bout=brg(r.at(Math.min(r.L,m.s+3)).p, r.at(Math.min(r.L,m.s+45)).p);
+    var a=angDiff(bin,bout), geo = Math.abs(a)<25? 'straight' : (a>0?'right':'left');
+    var cur=(m.mod||'').indexOf('right')>=0?'right':(m.mod||'').indexOf('left')>=0?'left':'straight';
+    if(geo!=='straight' && geo!==cur && (cur!=='straight' || Math.abs(a)>45)){
+      m.fixedFrom=m.mod;
+      m.mod = Math.abs(a)<60? 'slight '+geo : Math.abs(a)>155? 'uturn' : geo;
+      if(m.type!=='turn' && m.type!=='end of road') m.type='turn';
+    }
+  });
   r.man=man;
 };
 
@@ -395,17 +406,41 @@ function lanesHTML(a,m){
 }
 
 /* 交差点の図（実際の道路の角度から描く） */
-function junctionSVG(m){
-  var I=m.inter; if(!I||!I.bearings||I['in']==null||I.out==null) return '';
-  var travel=(I.bearings[I['in']]+180)%360, cx=150, cy=118, Lr=120;
-  var pt=function(rel,len){return [cx+Math.sin(rel*RAD)*len, cy-Math.cos(rel*RAD)*len];};
-  var roads='', i;
-  for(i=0;i<I.bearings.length;i++){var e=pt((I.bearings[i]-travel+360)%360,Lr); roads+='<path d="M'+cx+' '+cy+'L'+e[0].toFixed(1)+' '+e[1].toFixed(1)+'" stroke="#3A4047" stroke-width="30" stroke-linecap="round"/>';}
-  var outRel=(I.bearings[I.out]-travel+360)%360, inEnd=pt(180,Lr-14), oe=pt(outRel,Lr-30), tip=pt(outRel,Lr-6), l1=pt(outRel-14,Lr-34), l2=pt(outRel+14,Lr-34);
-  return '<svg viewBox="0 0 300 236" aria-label="交差点の形"><rect width="300" height="236" fill="#1A2129"/>'+roads+
-    '<path d="M'+inEnd[0]+' '+inEnd[1]+'L'+cx+' '+cy+'L'+oe[0].toFixed(1)+' '+oe[1].toFixed(1)+'" fill="none" stroke="#3B9EFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>'+
+/* 交差点の図：地図と同じルートの線と、実際の道の向きから描く（地図と必ず一致させる） */
+function routeInters(R){
+  if(R.inters) return R.inters;
+  var out=[], hint=0;
+  R.steps.forEach(function(st){ (st.intersections||[]).forEach(function(it){
+    if(!it.bearings||it.bearings.length<3) return;
+    var sn=R.snap(it.location,hint,3000); hint=sn.i; out.push({p:it.location, b:it.bearings, s:sn.s});
+  }); });
+  R.inters=out; return out;
+}
+function junctionSVG(R,m){
+  if(m.jsvg!==undefined) return m.jsvg;
+  var o=m.loc, T=R.at(Math.max(0,m.s-15)).bearing*RAD, cx=150, cy=128, sc=1.35;
+  var kx=Math.cos(o[1]*RAD)*ER*RAD, ky=ER*RAD;
+  var xy=function(p){ var dx=(p[0]-o[0])*kx, dy=(p[1]-o[1])*ky; return [cx+(dx*Math.cos(T)-dy*Math.sin(T))*sc, cy-(dx*Math.sin(T)+dy*Math.cos(T))*sc]; };
+  var path=function(pts){ return 'M'+pts.map(function(p){var q=xy(p); return q[0].toFixed(1)+' '+q[1].toFixed(1);}).join('L'); };
+  var g='';
+  routeInters(R).forEach(function(it){
+    if(Math.abs(it.s-m.s)>70) return;
+    it.b.forEach(function(b){
+      var e=[it.p[0]+Math.sin(b*RAD)*70/kx, it.p[1]+Math.cos(b*RAD)*70/ky];
+      g+='<path d="'+path([it.p,e])+'" stroke="#3A4047" stroke-width="26" stroke-linecap="round"/>';
+    });
+  });
+  var road=R.slice(Math.max(0,m.s-110),Math.min(R.L,m.s+110));
+  g='<path d="'+path(road)+'" fill="none" stroke="#3A4047" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>'+g;
+  var blue=R.slice(Math.max(0,m.s-80),Math.min(R.L,m.s+62)), endA=R.at(Math.min(R.L,m.s+62)), preA=R.at(Math.min(R.L,m.s+50));
+  var E=xy(endA.p), P=xy(preA.p), ang=Math.atan2(E[1]-P[1],E[0]-P[0]);
+  var tip=[E[0]+Math.cos(ang)*14,E[1]+Math.sin(ang)*14], l1=[E[0]+Math.cos(ang+2.2)*14,E[1]+Math.sin(ang+2.2)*14], l2=[E[0]+Math.cos(ang-2.2)*14,E[1]+Math.sin(ang-2.2)*14];
+  var car=xy(R.at(Math.max(0,m.s-75)).p);
+  m.jsvg='<svg viewBox="0 0 300 236" aria-label="交差点の形"><rect width="300" height="236" fill="#1A2129"/>'+g+
+    '<path d="'+path(blue)+'" fill="none" stroke="#3B9EFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>'+
     '<path d="M'+tip[0].toFixed(1)+' '+tip[1].toFixed(1)+'L'+l1[0].toFixed(1)+' '+l1[1].toFixed(1)+'L'+l2[0].toFixed(1)+' '+l2[1].toFixed(1)+'Z" fill="#3B9EFF"/>'+
-    '<path d="M'+(cx-12)+' '+(cy+92)+'l12 -22 12 22 -12 -6z" fill="#fff"/></svg>';
+    '<path d="M'+car[0].toFixed(1)+' '+(car[1]-12).toFixed(1)+'l10 18 -10 -5 -10 5z" fill="#fff"/></svg>';
+  return m.jsvg;
 }
 
 /* ===== 目印と信号（OpenStreetMap） ===== */
@@ -826,7 +861,7 @@ function panelFor(R,m,next,d,recovering){
     var title = pp? pp.where+(pp.lm?'、'+pp.lm+'の角':'')+'を'+(side(m)||word(m)) : Math.round(d/10)*10+'m先を'+word(m);
     var lv=laneAdvice(m,next), laneLine = lv? '<div class="laneline">'+icon('check',16,'currentColor',2.8)+esc(lv.text)+'</div>' : '';
     if(m.photo) return {key:'vp'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:photoHTML(m,title)+laneLine+(trap?'<div class="trap">'+trap+'</div>':'')};
-    return {key:'v'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:'<div class="jrow"><div class="junction">'+junctionSVG(m)+'</div><h2>'+esc(title)+'</h2></div>'+laneLine+(trap?'<div class="trap">'+trap+'</div>':'')};
+    return {key:'v'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:'<div class="jrow"><div class="junction">'+junctionSVG(R,m)+'</div><h2>'+esc(title)+'</h2></div>'+laneLine+(trap?'<div class="trap">'+trap+'</div>':'')};
   }
   if(d<=800){
     var la2=laneAdvice(m,next);
