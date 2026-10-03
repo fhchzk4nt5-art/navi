@@ -95,6 +95,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .top .next{background:var(--ground);border-radius:12px;padding:8px 12px;font-size:15px;font-weight:700;display:flex;gap:8px;align-items:center}
 .photo{position:relative;border-radius:12px;overflow:hidden;background:#1A2129;aspect-ratio:2/1;max-width:100%}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo .credit{position:absolute;right:6px;top:6px;font-size:10px;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:6px}
 .pbadge{position:absolute;left:8px;bottom:8px;right:8px;background:rgba(20,95,58,.92);color:#fff;font-weight:700;padding:6px 10px;border-radius:10px;display:flex;gap:6px;align-items:center;font-size:15px;line-height:1.3}
 .laneline{display:flex;gap:6px;align-items:center;font-size:15px;font-weight:700;color:#8CC4FF}
 details.sv{background:var(--surface);border-radius:14px;padding:10px 14px;font-size:14px}
@@ -116,6 +117,13 @@ details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px so
 #mistake{background:#3A2414;color:var(--warn);white-space:nowrap;font-size:15px;padding:0 8px}
 #recenter{position:absolute;right:12px;bottom:200px;z-index:4;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 #toast{position:absolute;left:16px;right:16px;bottom:210px;z-index:6;background:#2A1416;border:2px solid #C93A3F;color:#FFD4D6;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.5}
+#paywall{position:absolute;inset:0;z-index:8;background:var(--ground);overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.pw{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.pw h2{margin:0;font-size:30px}
+.pw ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.5}
+.pw .price{margin:0;display:flex;align-items:baseline;gap:10px}
+.pw .price b{font-size:28px;color:var(--eta)}
+.pw .price span{font-size:15px;color:var(--ok);font-weight:700}
 #arrived{position:absolute;inset:0;z-index:7;background:rgba(10,14,18,.95);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px 20px}
 #arrived h2{margin:0;font-size:30px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--muted);margin-right:6px}
@@ -142,7 +150,7 @@ details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px so
         <button class="btn go" type="button" id="startNav">案内開始</button>
         <button class="btn" type="button" id="startDemo">家で試す（デモ走行）</button>
       </div>
-      <p class="note">到着予定は渋滞を含みません。走る前に、曲がる場所の景色を確認できます。</p>
+      <p class="note" id="etaNote">到着予定は渋滞を含みません。走る前に、曲がる場所の景色を確認できます。</p>
       <div class="steps" id="stepList"></div>
     </div>
   </div>
@@ -154,11 +162,17 @@ details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px so
   </div>
   <details class="sv" id="svBox">
     <summary id="svSum">曲がる場所の実写写真：未設定</summary>
-    <p class="note">Googleストリートビューの写真を、曲がる800m手前から表示します。自分用のキー（APIキー）を入れると使えます。キーはこのスマホの中だけに保存され、GitHubには載りません。</p>
-    <div class="row"><input id="svKey" type="password" autocomplete="off" placeholder="APIキーを貼り付け" aria-label="APIキー"><button class="btn primary" type="button" id="svSave">保存</button></div>
+    <p class="note">Mapillary（誰でも使える道路写真サービス）の写真を、曲がる800m手前から表示します。mapillary.com で無料登録し、開発者ページで作れる「クライアントトークン」（MLY|で始まる）を貼り付けてください。トークンはこのスマホの中だけに保存されます。</p>
+    <div class="row"><input id="svKey" type="password" autocomplete="off" placeholder="MLY|… を貼り付け" aria-label="Mapillaryのトークン"><button class="btn primary" type="button" id="svSave">保存</button></div>
+  </details>
+  <details class="sv" id="subBox" hidden>
+    <summary>サブスクの管理</summary>
+    <p class="note" id="subInfo"></p>
+    <div class="row"><button class="btn" type="button" id="portalBtn">解約・カード変更</button><button class="btn" type="button" id="copyLic">購入コードをコピー</button></div>
+    <p class="note">購入コードは、機種変更や別のスマホで使う時に必要です。メモ帳などに保存しておいてください。</p>
   </details>
   <p class="msg err" id="err" hidden></p>
-  <p class="note">地図 © OpenStreetMap contributors ／ ルート OSRM ／ 目印・信号 Overpass API。個人での試用向けの無料サーバーを使っています。</p>
+  <p class="note" id="creditNote">地図 © OpenStreetMap contributors ／ ルート OSRM ／ 目印・信号 Overpass API。個人での試用向けの無料サーバーを使っています。</p>
 </section>
 
 <div id="nav" hidden>
@@ -184,6 +198,25 @@ details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px so
   </div>
 </div>
 <div id="toast" hidden></div>
+<div id="paywall" hidden>
+  <div class="pw">
+    <h2>最強カーナビ</h2>
+    <p class="msg" id="pwMsg">道を間違えないナビ。曲がる800m前から車線と景色で案内します。</p>
+    <ul>
+      <li>車線ガイドと交差点の実写写真</li>
+      <li>目印と信号の数で「2つ目の信号、コンビニの角を右」</li>
+      <li>間違えてもUターンなしで即リカバリー</li>
+      <li>今の渋滞を反映した到着予定</li>
+      <li>お姉さんボイス</li>
+    </ul>
+    <p class="price"><b id="pwPrice"></b><span id="pwTrial"></span></p>
+    <button class="btn go" type="button" id="buyBtn">無料で始める</button>
+    <details class="sv"><summary>購入コードをお持ちの方</summary>
+      <div class="row"><input id="licIn" type="text" autocomplete="off" placeholder="cus_… から始まるコード" aria-label="購入コード"><button class="btn primary" type="button" id="licBtn">使う</button></div>
+    </details>
+    <p class="note">いつでも解約できます。お試し期間中に解約すれば料金はかかりません。</p>
+  </div>
+</div>
 <div id="arrived" hidden>
   <h2>目的地に到着しました</h2>
   <p class="msg" id="arrivedText"></p>
@@ -195,6 +228,22 @@ details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px so
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id);};
+/* ===== 設定（サブスク版にする時だけ埋める。空なら無料の試用版として動く） ===== */
+var CONFIG={
+  api:'',          /* サーバー（Cloudflare Worker）のURL 例 https://navi-api.xxxx.workers.dev */
+  mapboxToken:'',  /* Mapbox の公開トークン（pk.で始まる。地図の表示用） */
+  price:'月額 480円',
+  trial:'7日間無料'
+};
+var PAID=!!CONFIG.api;
+var license=''; try{ license=localStorage.getItem('navi.license')||''; }catch(e){}
+function api(path,opt){
+  opt=opt||{}; opt.headers=opt.headers||{}; if(license) opt.headers.Authorization='Bearer '+license;
+  return fetch(CONFIG.api.replace(/\/$/,'')+path,opt).then(function(r){
+    if(r.status===401||r.status===402){ showPaywall(r.status===402?'expired':''); throw new Error('paywall'); }
+    return r.json();
+  });
+}
 var OSRM='https://router.project-osrm.org/route/v1/driving/';
 var NOMINATIM='https://nominatim.openstreetmap.org/search';
 var OVERPASS='https://overpass-api.de/api/interpreter';
@@ -241,6 +290,8 @@ function Route(osrm){
   r.L=r.cum[r.cum.length-1];
   var ms=[]; (osrm.legs[0].annotation&&osrm.legs[0].annotation.maxspeed||[]).forEach(function(x){ms.push(x&&!x.unknown&&!x.none? (x.unit==='mph'?Math.round(x.speed*1.609):x.speed) : null);});
   r.maxspeed=ms;
+  r.cong=(osrm.legs[0].annotation&&osrm.legs[0].annotation.congestion)||null;
+  r.traffic=!!r.cong;
   r.steps=osrm.legs[0].steps;
   r.motorway = r.steps.some(function(s){return (s.intersections||[]).some(function(it){return (it.classes||[]).indexOf('motorway')>=0;});});
   r.build();
@@ -296,24 +347,34 @@ Route.prototype.build=function(){
   r.man=man;
 };
 
-/* ===== 曲がる場所の実写写真（Googleストリートビュー） ===== */
+/* ===== 曲がる場所の実写写真（Mapillary） ===== */
+function pickMly(list,lat,lon,hd){
+  var best=null, bs=1e9;
+  (list||[]).forEach(function(im){
+    if(im.is_pano||!im.thumb_1024_url) return;
+    var g=(im.computed_geometry||im.geometry||{}).coordinates; if(!g) return;
+    var ang=im.computed_compass_angle!=null?im.computed_compass_angle:im.compass_angle; if(ang==null) return;
+    var da=Math.abs(angDiff(hd,ang)); if(da>50) return;
+    var sc=dist([lon,lat],g)+da*0.8; if(sc<bs){bs=sc; best=im;}
+  });
+  return best? best.thumb_1024_url : null;
+}
 function fetchPhoto(R,m){
-  if(!svKey||m.photo!==undefined||m.photoLoading||m.type==='arrive') return;
+  if((!PAID&&!mlyToken)||m.photo!==undefined||m.photoLoading||m.type==='arrive') return;
   m.photoLoading=true;
-  var back=R.at(Math.max(0,m.s-40)), hd=brg(back.p,m.loc);
-  if(dist(back.p,m.loc)<8) hd=back.bearing;
-  var loc=back.p[1].toFixed(6)+','+back.p[0].toFixed(6);
-  fetch('https://maps.googleapis.com/maps/api/streetview/metadata?location='+loc+'&radius=35&source=outdoor&key='+encodeURIComponent(svKey))
-  .then(function(r){return r.json();}).then(function(j){
-    if(j.status==='OK'){
-      var pid=j.pano_id?('pano='+encodeURIComponent(j.pano_id)):('location='+loc);
-      var url='https://maps.googleapis.com/maps/api/streetview?size=640x320&'+pid+'&heading='+Math.round(hd)+'&fov=85&pitch=-2&source=outdoor&key='+encodeURIComponent(svKey);
-      var img=new Image(); img.onload=function(){ m.photo=url; }; img.onerror=function(){ m.photo=false; }; img.src=url;
-    } else { m.photo=false; if(j.status==='REQUEST_DENIED') toast('写真のキーが使えません：'+(j.error_message||'設定を確認してください'),8000); }
-  }).catch(function(){ m.photo=false; }).then(function(){ m.photoLoading=false; });
+  var back=R.at(Math.max(0,m.s-40)), hd=brg(back.p,m.loc); if(dist(back.p,m.loc)<8) hd=back.bearing;
+  var lat=back.p[1], lon=back.p[0], job;
+  if(PAID) job=api('/api/photo?lat='+lat.toFixed(6)+'&lon='+lon.toFixed(6)+'&heading='+Math.round(hd)).then(function(j){return j.url;});
+  else { var d=0.0004; job=fetch('https://graph.mapillary.com/images?access_token='+encodeURIComponent(mlyToken)+'&fields=id,thumb_1024_url,computed_compass_angle,compass_angle,computed_geometry,geometry,is_pano&limit=60&bbox='+[lon-d,lat-d,lon+d,lat+d].join(','))
+    .then(function(r){ if(!r.ok) throw r.status; return r.json(); }).then(function(j){ return pickMly(j.data,lat,lon,hd); }); }
+  job.then(function(url){
+    if(!url){ m.photo=false; return; }
+    var img=new Image(); img.onload=function(){ m.photo=url; }; img.onerror=function(){ m.photo=false; }; img.src=url;
+  }).catch(function(e){ m.photo=false; if(e===401||e===403) toast('写真のトークンが使えません。設定を確認してください。',6000); })
+  .then(function(){ m.photoLoading=false; });
 }
 function photoHTML(m,label){
-  return '<div class="photo"><img src="'+m.photo+'" alt="曲がる場所の景色"><span class="pbadge">'+icon(iconOf(m),24,'#fff',2.8)+esc(label)+'</span></div>';
+  return '<div class="photo"><img src="'+m.photo+'" alt="曲がる場所の景色"><span class="credit">© Mapillary</span><span class="pbadge">'+icon(iconOf(m),24,'#fff',2.8)+esc(label)+'</span></div>';
 }
 
 /* ===== 案内文 ===== */
@@ -505,8 +566,8 @@ function showErr(t){var e=$('err'); e.textContent=t; e.hidden=!t;}
 function toast(t,ms){var e=$('toast'); e.textContent=t; e.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(function(){e.hidden=true;},ms||5000);}
 
 /* ===== 音声 ===== */
-var jaVoices=[], jaVoice=null, persona='std', voiceName='', svKey='';
-try{ svKey=localStorage.getItem('navi.svkey')||''; }catch(e){}
+var jaVoices=[], jaVoice=null, persona='std', voiceName='', mlyToken='';
+try{ mlyToken=localStorage.getItem('navi.mly')||''; localStorage.removeItem('navi.svkey'); }catch(e){}
 try{ persona=localStorage.getItem('navi.persona')||'std'; voiceName=localStorage.getItem('navi.voice')||''; }catch(e){}
 function pickVoice(){
   try{
@@ -591,9 +652,50 @@ function chatter(R,m,next,d,realV,lim){
   nav.stopSince=0; nav.stopSaid=false;
   if(quiet>150000 && d>700 && now-(nav.chatAt||0)>180000){ nav.chatAt=now; say(V('chat')); }
 }
-function syncSv(){ $('svSum').textContent='曲がる場所の実写写真：'+(svKey?'オン':'未設定'); $('svKey').value=svKey; }
-$('svSave').addEventListener('click',function(){ svKey=$('svKey').value.trim(); try{localStorage.setItem('navi.svkey',svKey);}catch(e){} syncSv(); toast(svKey?'写真のキーを保存しました':'写真をオフにしました',3000); });
+function syncSv(){ $('svBox').hidden=PAID; $('svSum').textContent='曲がる場所の実写写真：'+(mlyToken?'オン':'未設定'); $('svKey').value=mlyToken; }
+$('svSave').addEventListener('click',function(){ mlyToken=$('svKey').value.trim(); try{localStorage.setItem('navi.mly',mlyToken);}catch(e){} syncSv(); toast(mlyToken?'写真のトークンを保存しました':'写真をオフにしました',3000); });
 syncSv();
+/* ===== サブスク ===== */
+function showPaywall(why){
+  if(!PAID) return;
+  $('pwPrice').textContent=CONFIG.price; $('pwTrial').textContent=CONFIG.trial||'';
+  $('buyBtn').textContent=CONFIG.trial? CONFIG.trial+'で始める' : '購入する';
+  $('pwMsg').textContent= why==='expired'? 'サブスクの期限が切れているか、お支払いが確認できませんでした。続けて使うには再開してください。' : '道を間違えないナビ。曲がる800m前から車線と景色で案内します。';
+  $('paywall').hidden=false;
+}
+function setLicense(t){ license=t; try{ localStorage.setItem('navi.license',t); }catch(e){} }
+function checkSub(){
+  if(!PAID) return;
+  $('creditNote').textContent='地図・ルート・渋滞 © Mapbox © OpenStreetMap ／ 写真 © Mapillary ／ 目印・信号 © OpenStreetMap contributors';
+  if(!license){ showPaywall(); return; }
+  api('/api/status').then(function(st){
+    if(!st.active){ showPaywall('expired'); return; }
+    $('paywall').hidden=true; $('subBox').hidden=false;
+    var until=st.trialEnd||st.periodEnd, dt=until? new Date(until*1000) : null;
+    $('subInfo').textContent=(st.status==='trialing'?'無料お試し中':'ご利用中')+(dt?'（'+(dt.getMonth()+1)+'月'+dt.getDate()+'日まで'+(st.cancelAtEnd?'・解約済み':'・自動更新')+'）':'');
+  }).catch(function(){});
+}
+$('buyBtn').addEventListener('click',function(){
+  var b=this; b.disabled=true; b.textContent='お支払い画面を開いています…';
+  fetch(CONFIG.api.replace(/\/$/,'')+'/api/checkout',{method:'POST'}).then(function(r){return r.json();}).then(function(j){ if(j.url) location.href=j.url; else throw 0; })
+  .catch(function(){ b.disabled=false; showPaywall(); toast('お支払い画面を開けませんでした。電波の良い場所でもう一度押してください。'); });
+});
+$('licBtn').addEventListener('click',function(){ var t=$('licIn').value.trim(); if(!t) return; setLicense(t); checkSub(); });
+$('portalBtn').addEventListener('click',function(){ api('/api/portal',{method:'POST'}).then(function(j){ if(j.url) location.href=j.url; }).catch(function(){ toast('管理画面を開けませんでした。'); }); });
+$('copyLic').addEventListener('click',function(){
+  try{ navigator.clipboard.writeText(license).then(function(){ toast('購入コードをコピーしました',2500); },function(){ toast('購入コード：'+license,15000); }); }catch(e){ toast('購入コード：'+license,15000); }
+});
+(function(){
+  if(!PAID) return;
+  var sid=new URLSearchParams(location.search).get('paid');
+  if(sid){
+    history.replaceState(null,'',location.pathname);
+    fetch(CONFIG.api.replace(/\/$/,'')+'/api/claim?session_id='+encodeURIComponent(sid)).then(function(r){return r.json();}).then(function(j){
+      if(j.token){ setLicense(j.token); toast('ご登録ありがとうございます！そのまま使えます。',5000); }
+      checkSub();
+    }).catch(checkSub);
+  } else checkSub();
+})();
 $('persona').value=persona;
 $('persona').addEventListener('change',function(){ persona=this.value; try{localStorage.setItem('navi.persona',persona);}catch(e){} });
 $('voiceSel').addEventListener('change',function(){ voiceName=this.value; jaVoice=jaVoices.filter(function(v){return v.name===voiceName;})[0]||null; try{localStorage.setItem('navi.voice',voiceName);}catch(e){} });
@@ -604,7 +706,10 @@ function syncVoice(){ $('voiceBtn').innerHTML=icon(voiceOn?'voice':'mute',22); $
 /* ===== 地図 ===== */
 map=new maplibregl.Map({
   container:'map', center:[139.7671,35.6812], zoom:13, attributionControl:{compact:true}, pitchWithRotate:true,
-  style:{version:8, sources:{osm:{type:'raster', tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize:256, maxzoom:19, attribution:'© OpenStreetMap contributors'}},
+  style: PAID&&CONFIG.mapboxToken ?
+    {version:8, sources:{mb:{type:'raster', tiles:['https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/512/{z}/{x}/{y}@2x?access_token='+CONFIG.mapboxToken], tileSize:512, maxzoom:20, attribution:'© Mapbox © OpenStreetMap'}},
+      layers:[{id:'bg',type:'background',paint:{'background-color':'#131A21'}},{id:'mb',type:'raster',source:'mb'}]} :
+    {version:8, sources:{osm:{type:'raster', tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize:256, maxzoom:19, attribution:'© OpenStreetMap contributors'}},
     layers:[{id:'bg',type:'background',paint:{'background-color':'#131A21'}},{id:'osm',type:'raster',source:'osm',paint:{'raster-brightness-max':0.72,'raster-saturation':-0.35,'raster-contrast':0.05}}]}
 });
 map.on('load',function(){
@@ -613,14 +718,27 @@ map.on('load',function(){
   map.addLayer({id:'alts',type:'line',source:'alts',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#7A8794','line-width':7,'line-opacity':.8}});
   map.addLayer({id:'route-casing',type:'line',source:'route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0B1520','line-width':13}});
   map.addLayer({id:'route',type:'line',source:'route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#3B9EFF','line-width':9}});
+  map.addSource('traffic',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'traffic',type:'line',source:'traffic',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','c'],'moderate','#F0A030','#E5484D'],'line-width':9}});
 });
 map.on('dragstart',function(){ if(nav){ follow=false; $('recenter').hidden=false; } });
 
-function setRouteLines(main,alts){
+function setRouteLines(main,alts,cong){
   var f=function(c){return {type:'Feature',geometry:{type:'LineString',coordinates:c}};};
   if(!map.getSource('route')) return;
   map.getSource('route').setData({type:'FeatureCollection',features:main?[f(main)]:[]});
   map.getSource('alts').setData({type:'FeatureCollection',features:(alts||[]).map(f)});
+  /* 渋滞している区間だけ色を変える（オレンジ＝混雑、赤＝渋滞） */
+  var tf=[];
+  if(main&&cong){ var run=null;
+    for(var i=0;i<cong.length&&i<main.length-1;i++){
+      var c=cong[i], hot=c==='moderate'||c==='heavy'||c==='severe', k=c==='moderate'?'moderate':'heavy';
+      if(hot){ if(run&&run.c===k) run.pts.push(main[i+1]); else { if(run) tf.push(run); run={c:k,pts:[main[i],main[i+1]]}; } }
+      else if(run){ tf.push(run); run=null; }
+    }
+    if(run) tf.push(run);
+  }
+  map.getSource('traffic').setData({type:'FeatureCollection',features:tf.map(function(r){return {type:'Feature',properties:{c:r.c},geometry:{type:'LineString',coordinates:r.pts}};})});
 }
 
 /* ===== 現在地 ===== */
@@ -647,7 +765,9 @@ $('searchForm').addEventListener('submit',function(e){
   var url=NOMINATIM+'?format=jsonv2&limit=6&accept-language=ja&countrycodes=jp&q='+encodeURIComponent(q);
   if(here) url+='&viewbox='+(here[0]-0.6)+','+(here[1]+0.6)+','+(here[0]+0.6)+','+(here[1]-0.6);
   $('results').innerHTML='<p class="msg">検索中…</p>';
-  fetch(url).then(function(r){return r.json();}).then(function(list){
+  var job = PAID? api('/api/search?q='+encodeURIComponent(q)+(here?'&near='+here[0].toFixed(5)+','+here[1].toFixed(5):'')).then(function(l){ return l.map(function(x){return {name:x.name,display_name:x.full,lon:x.lon,lat:x.lat};}); })
+                : fetch(url).then(function(r){return r.json();});
+  job.then(function(list){
     if(!list.length){ $('results').innerHTML='<p class="msg">見つかりませんでした。住所や別の言い方で試してください。</p>'; return; }
     $('results').innerHTML='';
     list.forEach(function(it){
@@ -658,7 +778,7 @@ $('searchForm').addEventListener('submit',function(e){
       b.addEventListener('click',function(){ chooseDest([+it.lon,+it.lat],nm); });
       $('results').appendChild(b);
     });
-  }).catch(function(){ $('results').innerHTML=''; showErr('検索できませんでした。電波の良い場所でもう一度試してください。'); });
+  }).catch(function(e){ $('results').innerHTML=''; if(e&&e.message==='paywall') return; showErr('検索できませんでした。電波の良い場所でもう一度試してください。'); });
 });
 $('useCenter').addEventListener('click',function(){ var c=map.getCenter(); chooseDest([c.lng,c.lat],'地図で選んだ場所'); });
 
@@ -675,6 +795,10 @@ function chooseDest(p,name){
   }).catch(function(){ showErr('ルートを取得できませんでした。少し待ってもう一度選んでください。'); });
 }
 function fetchRoutes(from,to,bearing,plain){
+  if(PAID){
+    return api('/api/route?from='+from[0].toFixed(6)+','+from[1].toFixed(6)+'&to='+to[0].toFixed(6)+','+to[1].toFixed(6)+(bearing!=null?'&bearing='+Math.round(bearing):''))
+      .then(function(j){ if(j.code!=='Ok'||!j.routes||!j.routes.length) throw new Error(j.code||'route'); return j.routes.map(function(x){return new Route(x);}); });
+  }
   var url=OSRM+from[0].toFixed(6)+','+from[1].toFixed(6)+';'+to[0].toFixed(6)+','+to[1].toFixed(6)+
     '?overview=full&geometries=geojson&steps=true'+(plain?'':'&annotations=maxspeed')+'&alternatives='+(bearing==null?'true':'false');
   if(bearing!=null) url+='&bearings='+Math.round(bearing)+',60;&radiuses=40;unlimited';
@@ -688,6 +812,7 @@ function fetchRoutes(from,to,bearing,plain){
 }
 function renderRouteChoice(){
   $('routeBox').hidden=false;
+  $('etaNote').textContent= route.traffic? '到着予定は今の渋滞を反映しています。オレンジ＝混雑、赤＝渋滞。' : '到着予定は渋滞を含みません。走る前に、曲がる場所の景色を確認できます。';
   var cards=$('routeCards'); cards.innerHTML='';
   routes.forEach(function(r,i){
     var b=document.createElement('button'); b.type='button'; b.className='item rc'+(r===route?' sel':'');
@@ -695,7 +820,7 @@ function renderRouteChoice(){
     b.addEventListener('click',function(){ route=r; renderRouteChoice(); });
     cards.appendChild(b);
   });
-  setRouteLines(route.coords, routes.filter(function(r){return r!==route;}).map(function(r){return r.coords;}));
+  setRouteLines(route.coords, routes.filter(function(r){return r!==route;}).map(function(r){return r.coords;}), route.cong);
   var sl=$('stepList'); sl.innerHTML='';
   route.man.slice(0,12).forEach(function(m){
     if(m.type==='arrive') return;
@@ -714,7 +839,7 @@ function startNav(isDemo){
   nav={route:route, idx:0, snapI:0, s:0, off:0, offCount:0, rerouting:false, recoverUntil:0, startAt:Date.now(), lastPanel:'', lastTop:'', lastFinal:'', mistakes:0, startDist:route.L};
   $('setup').hidden=true; $('nav').hidden=false; follow=true; $('recenter').hidden=true;
   $('mistake').hidden=!isDemo;
-  setRouteLines(route.coords,[]);
+  setRouteLines(route.coords,[],route.cong);
   requestWake();
   if(isDemo) startDemo(); else if(!here) toast('現在地を待っています…');
   say(V('start',{next:(route.man[0]&&route.man[0].type!=='arrive')? roundSay(route.man[0].s)+'先、'+sayDir(route.man[0])+'。' : ''}));
@@ -898,7 +1023,7 @@ function reroute(){
   fetchRoutes(here,dest.p,heading).then(function(rs){
     var r=rs[0], newEta=Date.now()+r.duration*1000, late=Math.max(0,Math.round((newEta-oldEta)/60000));
     nav.route=r; route=r; nav.idx=0; nav.snapI=0; nav.s=0; nav.offCount=0; nav.fix=null; nav.lastTop=''; nav.lastPanel=''; nav.lastFinal='';
-    setRouteLines(r.coords,[]);
+    setRouteLines(r.coords,[],r.cong);
     var m0=r.man[0];
     nav.recoverHTML='<h2>大丈夫、すぐ戻れます</h2><p>新しいルートに自動で切り替えました。'+(m0&&m0.type!=='arrive'?'まず <b>'+Math.round(m0.s/10)*10+'m先で'+esc(word(m0))+'</b>。':'')+'</p><p>到着は <b style="color:var(--warn)">'+(late<=0?'ほぼ変わりません':'約'+late+'分遅れ')+'</b>（'+fmtTime(new Date(newEta))+' 着）</p>';
     nav.recoverUntil=Date.now()+7000;
