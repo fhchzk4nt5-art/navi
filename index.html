@@ -173,7 +173,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
   <button class="btn primary" type="button" id="arrivedOk">行き先の設定に戻る</button>
 </div>
 
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>
 <script>
 (function(){
 'use strict';
@@ -430,8 +430,10 @@ function pickVoice(){
   }catch(e){}
 }
 if('speechSynthesis' in window){ pickVoice(); try{ speechSynthesis.onvoiceschanged=pickVoice; }catch(e){} }
+var lastSayAt=0;
 function say(t){
   if(!voiceOn||!t||!('speechSynthesis' in window)) return;
+  lastSayAt=Date.now();
   try{
     var S=window.speechSynthesis; if(S.speaking||S.pending) S.cancel();
     var u=new SpeechSynthesisUtterance(t); u.lang='ja-JP'; if(jaVoice) u.voice=jaVoice;
@@ -457,21 +459,48 @@ function V(key,o){
       case 'reroute': return '大丈夫です。すぐ戻れます。'+(nx?'およそ'+nx:'');
       case 'soon': return 'まもなく目的地です。';
       case 'arrived': return '目的地に到着しました。お疲れさまでした。';
+      case 'speed': return 'スピードに注意してください。';
+      case 'straight': return 'しばらく道なりです。';
+      default: return '';
     }
   }
   switch(key){
-    case 'start': return pick(['ふふ、じゃあ出発しましょうか。今日はお姉さんが、ずっと隣で教えてあげる。','さ、行くわよ。ちゃんとお姉さんの言うこと、聞いてね？'])+(nx?' まずは'+nx.replace(/です。?$/,'よ。'):'');
-    case 'pre': return pick([o.d+'先、'+dir+'よ。'+(o.lane?o.lane+'に入っておいて。……そう、いい子。':'焦らなくていいからね。'),
+    case 'start': return pick(['今日もよろしくね。道は全部、私に任せて。','ふふ、じゃあ出発しましょうか。今日はお姉さんが、ずっと隣で教えてあげる。','さ、行くわよ。ちゃんとお姉さんの言うこと、聞いてね？'])+(nx?' まずは'+nx.replace(/です。?$/,'よ。'):'');
+    case 'pre': return pick([o.d+'先で'+dir+'よ。'+(o.lane?o.lane+'、覚えておいてね。ちゃんと聞いてた？':'ちゃんと聞いてた？'),o.d+'先、'+dir+'よ。'+(o.lane?o.lane+'に入っておいて。……そう、いい子。':'焦らなくていいからね。'),
                              'ねえ、'+o.d+'先で'+dir+'。'+(o.lane?o.lane+'に、ゆっくり寄せて。上手にできるかしら？':'ちゃんと覚えておいてね？')]);
     case 'near': return o.where? pick([o.where+lmp+'を'+dir+'。見逃しちゃ、ダメよ？','ほら、'+o.where+lmp+'。そこを'+dir+'よ。']) : pick(['もうすぐ'+dir+'。よそ見しないの。','ほら、もうすぐ'+dir+'よ。']);
-    case 'final': return pick(['はい、'+(o.sig?'この信号':'ここ')+'。'+fin+'……そう、上手。','今よ。'+fin+'。ふふ、完璧。']);
+    case 'final': return pick(['ここ。'+fin+'。ほら、できるじゃない。','はい、'+(o.sig?'この信号':'ここ')+'。'+fin+'……そう、上手。','今よ。'+fin+'。ふふ、完璧。']);
     case 'hwy': return o.x+dir+'よ。'+(o.dest?o.dest+'方面ね。':'')+(o.lane?o.lane+'に、早めに寄っておいて。':'')+'慌てなくていいから。';
     case 'hwyFinal': return pick(['ここよ。'+dir+'。……よくできました。','今よ、'+dir+'。上手じゃない。']);
-    case 'reroute': return pick(['あらあら、曲がらなかったの？ もう、しょうがない子ね。大丈夫、お姉さんがちゃんと連れ戻してあげる。','あら、行き過ぎちゃった？ 怒ってないわよ。すぐ戻れるから、ついてきて。'])+(nx?' まずは'+nx.replace(/です。?$/,'よ。'):'');
-    case 'soon': return pick(['もうすぐ着くわよ。……なんだか名残惜しいわね。','そろそろ到着。最後まで、気を抜いちゃダメよ？']);
-    case 'arrived': return pick(['到着よ。よく頑張ったわね、えらいえらい。また一緒にドライブしましょ？','はい、到着。今日も上手だったわよ。ご褒美は……ふふ、ナイショ。']);
+    case 'reroute': return pick(['あら、寄り道？ 私ともう少し一緒にいたかったのかしら。大丈夫、すぐ戻れるわ。','あらあら、曲がらなかったの？ もう、しょうがない子ね。大丈夫、お姉さんがちゃんと連れ戻してあげる。','あら、行き過ぎちゃった？ 怒ってないわよ。すぐ戻れるから、ついてきて。'])+(nx?' まずは'+nx.replace(/です。?$/,'よ。'):'');
+    case 'soon': return pick(['あと少し。最後まで、私の声を聞いててね。','もうすぐ着くわよ。……なんだか名残惜しいわね。','そろそろ到着。最後まで、気を抜いちゃダメよ？']);
+    case 'arrived': return pick(['もう着いちゃった。帰りも私を呼んでね。','到着。ちょっと寂しいけど、行ってらっしゃい。','到着よ。よく頑張ったわね、えらいえらい。また一緒にドライブしましょ？','はい、到着。今日も上手だったわよ。ご褒美は……ふふ、ナイショ。']);
+    case 'praise': return pick(['今の、上手だったわよ。','ちゃんと曲がれたわね。えらいえらい。','いい子。その調子よ。','あら、私の言うことちゃんと聞けるのね。','上手。惚れ直しちゃいそう。']);
+    case 'straight': return pick(['しばらくまっすぐよ。退屈なら、私の声だけ聞いてて。',(o.km?o.km+'くらい、':'しばらく、')+'まっすぐ。肩の力抜いて、ね？','この先しばらく道なり。私がちゃんと見ててあげる。']);
+    case 'stop': return pick(['止まっちゃったわね。ちょっとお喋りしよっか。','信号待ち？ じゃあ、少しだけ私のこと考えてて。','はい、ひと休み。深呼吸して。ね、落ち着くでしょ？','待ってる間も、ちゃんと隣にいるからね。']);
+    case 'speed': return pick(['ちょっと、スピード出しすぎよ。私を置いていく気？','あら、急いでるの？ 安全運転の人の方が、私は好きよ。','ねえ、飛ばしすぎ。ゆっくりでも、ちゃんと連れて行ってあげるから。']);
+    case 'chat': return pick(['ねえ、今日はどこに行くの？ 私も一緒でいいわよね。','運転してる横顔、けっこう好きよ。','疲れてない？ 無理しちゃダメよ。','ずっと話しかけてたら、うるさい？ でも、やめないけど。','こうして二人でドライブするの、悪くないわね。','前だけ見てて。私の顔は、あとでね。']);
   }
   return '';
+}
+/* お姉さんの「ひとこと」：曲がり終わり・長い直進・停車・スピード・沈黙が続いた時 */
+function chatter(R,m,next,d,realV,lim){
+  var now=Date.now(), quiet=now-lastSayAt;
+  if(nav.prevIdx==null) nav.prevIdx=nav.idx;
+  if(nav.idx>nav.prevIdx){
+    nav.prevIdx=nav.idx;
+    if(m.type!=='arrive' && d>2000){ setTimeout(function(){ say(V('straight',{km:roundSay(d)})); },2500); return; }
+    if(persona==='onee' && d>300 && Math.random()<0.6){ setTimeout(function(){ say(V('praise')); },2500); return; }
+  }
+  if(lim && realV*3.6>lim+10 && now-(nav.speedAt||0)>90000 && quiet>4000){ nav.speedAt=now; say(V('speed')); return; }
+  if(persona!=='onee') return;
+  if(realV<0.6){
+    if(!nav.stopSince) nav.stopSince=now;
+    if(now-nav.stopSince>6000 && !nav.stopSaid && d>60 && quiet>5000 && now-(nav.stopAt||0)>60000){ nav.stopSaid=true; nav.stopAt=now; say(V('stop')); }
+    return;
+  }
+  nav.stopSince=0; nav.stopSaid=false;
+  if(quiet>150000 && d>700 && now-(nav.chatAt||0)>180000){ nav.chatAt=now; say(V('chat')); }
 }
 $('persona').value=persona;
 $('persona').addEventListener('change',function(){ persona=this.value; try{localStorage.setItem('navi.persona',persona);}catch(e){} });
@@ -681,6 +710,7 @@ function navLogic(){
   nav.padTop=$('stack').offsetHeight+28;
 
   speak(R,m,next,d,finTh,recovering);
+  if(!recovering && !showFinal) chatter(R,m,next,d,realV,R.maxspeed[sn.i]);
 
   /* 到着予定 */
   var remDist=Math.max(0,R.L-nav.s), remDur=R.duration*(remDist/R.L);
@@ -723,7 +753,7 @@ function showBug(e){
   if(bugShown) return; bugShown=true;
   toast('不具合が起きました。この画面をスクショして送ってください：'+String(e&&e.message||e).slice(0,140),20000);
 }
-window.addEventListener('error',function(ev){ showBug(ev.error||ev.message); });
+window.addEventListener('error',function(ev){ var msg=String(ev.message||''); if(!ev.error || /^Script error/i.test(msg) || (ev.filename&&ev.filename.indexOf('maplibre')>=0)) return; showBug(ev.error); });
 
 function panelFor(R,m,next,d,recovering){
   if(recovering) return {key:'rec'+R.L, cls:'panel accent', html:nav.recoverHTML};
