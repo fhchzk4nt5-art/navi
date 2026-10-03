@@ -50,6 +50,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .st{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:12px;padding:8px 10px;font-size:14px}
 .st span{flex:1;min-width:0}
 .st a{color:#8CC4FF;font-size:13px;white-space:nowrap;padding:8px 4px}
+.vcfg{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;font-size:14px;color:var(--soft)}
+.vcfg select{height:48px;min-width:0;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--text);font-size:15px;padding:0 8px;font-family:inherit}
+.vcfg .btn{height:48px}
 .msg{font-size:14px;line-height:1.55;color:var(--soft);margin:0}
 .msg.err{color:var(--bad)}
 .note{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
@@ -61,15 +64,15 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .top .dist{font-size:38px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
 .top .dist small{font-size:20px}
 .top .label{font-size:17px;font-weight:700;margin-top:4px;line-height:1.3}
-.panel{background:var(--surface);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.panel{background:var(--surface);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
 .panel.accent{background:#13263A;border:2px solid var(--route)}
-.panel h2{margin:0;font-size:21px;line-height:1.35}
-.panel p{margin:0;font-size:14px;line-height:1.55;color:var(--soft)}
+.panel h2{margin:0;font-size:19px;line-height:1.35}
+.panel p{margin:0;font-size:13px;line-height:1.55;color:var(--soft)}
 .panel p b{color:var(--text)}
-.lanes{display:grid;gap:6px;background:#11171D;border-radius:14px;padding:10px}
-.lane{height:84px;border-radius:10px;background:#232D37;display:flex;align-items:center;justify-content:center}
+.lanes{display:grid;gap:5px;background:#11171D;border-radius:12px;padding:6px}
+.lane{height:52px;border-radius:10px;background:#232D37;display:flex;align-items:center;justify-content:center}
 .lane.rec{background:var(--route)}
-.trap{background:#2A2213;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5}
+.trap{background:#2A2213;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.45}
 .trap b{color:var(--warn)}
 .junction{border-radius:12px;overflow:hidden;background:#1A2129}
 .junction svg{display:block;width:100%;height:auto}
@@ -80,11 +83,13 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .count span{padding:8px 0;border-radius:10px;background:var(--raised)}
 .count span.on{background:var(--route);color:var(--route-ink);font-weight:700}
 .count span.done{color:#6E7A85}
-#final{position:absolute;inset:0;z-index:4;background:var(--go);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 20px 210px;text-align:center}
-#final .pill{font-size:18px;font-weight:700;background:rgba(0,0,0,.25);padding:6px 14px;border-radius:999px}
-#final .word{font-size:58px;font-weight:700;line-height:1.1}
-#final .d{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-#final .next{background:var(--ground);border-radius:16px;padding:12px 16px;font-size:17px;font-weight:700;display:flex;gap:10px;align-items:center}
+.top.big{flex-direction:column;align-items:stretch;gap:10px;padding:16px 18px;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 8px 24px rgba(0,0,0,.45)}
+.bigrow{display:flex;align-items:center;gap:14px}
+.top.big .word{font-size:30px;font-weight:700;line-height:1.2}
+.top.big .dist{font-size:30px;margin-top:6px}
+.lanetxt{display:flex;gap:8px;align-items:center;font-size:16px;font-weight:700;background:rgba(0,0,0,.22);border-radius:12px;padding:8px 12px}
+.top .next{background:var(--ground);border-radius:12px;padding:8px 12px;font-size:15px;font-weight:700;display:flex;gap:8px;align-items:center}
+.jrow{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:center}
 #bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--ground);border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 24px rgba(0,0,0,.5)}
 .stats{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
 .limit{width:52px;height:52px;flex:none;border-radius:50%;background:#fff;border:5px solid #D23B40;display:flex;align-items:center;justify-content:center;color:#111;font-size:19px;font-weight:700}
@@ -96,7 +101,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .ctl{display:flex;gap:8px}
 .ctl .btn{height:48px;min-width:48px;padding:0 12px}
 .ctl .grow{flex:1}
-#mistake{background:#3A2414;color:var(--warn)}
+#mistake{background:#3A2414;color:var(--warn);white-space:nowrap;font-size:15px;padding:0 8px}
 #recenter{position:absolute;right:12px;bottom:200px;z-index:4;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 #toast{position:absolute;left:16px;right:16px;bottom:210px;z-index:6;background:#2A1416;border:2px solid #C93A3F;color:#FFD4D6;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.5}
 #arrived{position:absolute;inset:0;z-index:7;background:rgba(10,14,18,.95);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px 20px}
@@ -128,6 +133,12 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
       <p class="note">到着予定は渋滞を含みません。走る前に、曲がる場所の景色を確認できます。</p>
       <div class="steps" id="stepList"></div>
     </div>
+  </div>
+  <div class="vcfg">
+    <label for="persona">案内の声</label>
+    <select id="persona"><option value="std">標準</option><option value="onee">お姉さん</option></select>
+    <select id="voiceSel" aria-label="声の種類"></select>
+    <button class="btn" type="button" id="testVoice">試す</button>
   </div>
   <p class="msg err" id="err" hidden></p>
   <p class="note">地図 © OpenStreetMap contributors ／ ルート OSRM ／ 目印・信号 Overpass API。個人での試用向けの無料サーバーを使っています。</p>
@@ -244,13 +255,13 @@ Route.prototype.build=function(){
     var keep = type==='arrive' || !((type==='new name'||type==='continue'||type==='notification') && (mod==='straight'||mod===''));
     if(type==='continue' && mod && mod!=='straight') keep=true;
     if(!keep) return;
-    var loc=st.maneuver.location, sn=r.snap(loc,hint,2000); hint=sn.i;
+    var loc=st.maneuver.location, sn=r.snap(loc,hint,2000); hint=sn.i; var ci=sn.i;
     var inter=(st.intersections||[])[0]||null;
     var prevInters=(r.steps[k-1].intersections||[]).slice(1);
     var classesPrev=(r.steps[k-1].intersections||[]).reduce(function(a,it){return a.concat(it.classes||[]);},[]);
     var hwy = classesPrev.indexOf('motorway')>=0 || type==='off ramp' || (type==='fork' && classesPrev.indexOf('motorway')>=0);
     man.push({k:k, s:sn.s, type:type, mod:mod, loc:loc, name:st.name||'', ref:st.ref||'', dest:st.destinations||'', exits:st.exits||'',
-      lanes:inter&&inter.lanes||null, inter:inter, prevInters:prevInters, hwy:hwy, spoken:{}, info:null});
+      ci:ci, lanes:inter&&inter.lanes||null, inter:inter, prevInters:prevInters, hwy:hwy, spoken:{}, info:null});
   });
   if(!man.length || man[man.length-1].type!=='arrive') man.push({type:'arrive',mod:'',s:r.L,loc:r.coords[r.coords.length-1],spoken:{},name:''});
   man[man.length-1].s=r.L;
@@ -330,7 +341,7 @@ function laneAdvice(m,next){
 }
 function lanesHTML(a,m){
   var h='<div class="lanes" style="grid-template-columns:repeat('+a.n+',minmax(0,1fr))">';
-  a.L.forEach(function(l,i){ var on=a.rec.indexOf(i)>=0; h+='<div class="lane'+(on?' rec':'')+'">'+icon(laneIcon(l.indications||[],m),34,on?'#0B1520':'#5D6B78',2.6)+'</div>'; });
+  a.L.forEach(function(l,i){ var on=a.rec.indexOf(i)>=0; h+='<div class="lane'+(on?' rec':'')+'">'+icon(laneIcon(l.indications||[],m),28,on?'#0B1520':'#5D6B78',2.6)+'</div>'; });
   return h+'</div>';
 }
 
@@ -367,7 +378,7 @@ function fetchInfo(route,m){
     var sig=[], lm=null, lmD=1e9;
     (j.elements||[]).forEach(function(e){
       var t=e.tags||{}, p=[e.lon!=null?e.lon:e.center.lon, e.lat!=null?e.lat:e.center.lat];
-      if(t.highway==='traffic_signals'){var sn=route.snap(p,null); if(sn.d<25 && sn.s<=m.s+30) sig.push(sn.s); return;}
+      if(t.highway==='traffic_signals'){var sn=route.snap(p,Math.max(0,(m.ci||0)-400),420); if(sn.d<25 && sn.s<=m.s+30) sig.push(sn.s); return;}
       var d=dist(p,m.loc); var cat=CAT[t.shop]||CAT[t.amenity]; var nm=t['brand:ja']||t.brand||t['name:ja']||t.name||cat;
       if(nm && d<lmD){lmD=d; lm=(nm===cat||!cat||nm.indexOf(cat)>=0||/[店局院校番所]$/.test(nm))? nm : nm;}
     });
@@ -389,7 +400,7 @@ function trapText(route,m){
   var best=null;
   m.prevInters.forEach(function(it){
     if(!it.bearings||it.bearings.length<3) return;
-    var sn=route.snap(it.location,null), gap=m.s-sn.s;
+    var sn=route.snap(it.location,Math.max(0,(m.ci||0)-150),170), gap=m.s-sn.s;
     if(gap>15 && gap<110 && (!best||gap<best)) best=gap;
   });
   return best? '手前 <b>'+Math.round(best/10)*10+'m</b> にも曲がれる道があります。そこは<b>曲がらずに直進</b>して、その先を'+sd+'へ。' : '';
@@ -406,10 +417,66 @@ function showErr(t){var e=$('err'); e.textContent=t; e.hidden=!t;}
 function toast(t,ms){var e=$('toast'); e.textContent=t; e.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(function(){e.hidden=true;},ms||5000);}
 
 /* ===== 音声 ===== */
+var jaVoices=[], jaVoice=null, persona='std', voiceName='';
+try{ persona=localStorage.getItem('navi.persona')||'std'; voiceName=localStorage.getItem('navi.voice')||''; }catch(e){}
+function pickVoice(){
+  try{
+    jaVoices=speechSynthesis.getVoices().filter(function(x){return /^ja/i.test(x.lang);});
+    var female=/kyoko|o-ren|oren|haruka|ayumi|nanami|sayaka|female|女性/i;
+    jaVoices.sort(function(a,b){return (female.test(b.name)?1:0)-(female.test(a.name)?1:0);});
+    jaVoice=jaVoices.filter(function(v){return v.name===voiceName;})[0]||jaVoices[0]||null;
+    var sel=$('voiceSel'); if(!sel) return;
+    sel.innerHTML=jaVoices.length? jaVoices.map(function(v){return '<option'+(jaVoice&&v.name===jaVoice.name?' selected':'')+'>'+esc(v.name)+'</option>';}).join('') : '<option>標準の声</option>';
+  }catch(e){}
+}
+if('speechSynthesis' in window){ pickVoice(); try{ speechSynthesis.onvoiceschanged=pickVoice; }catch(e){} }
 function say(t){
   if(!voiceOn||!t||!('speechSynthesis' in window)) return;
-  try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='ja-JP'; u.rate=1.05; speechSynthesis.speak(u);}catch(e){}
+  try{
+    var S=window.speechSynthesis; if(S.speaking||S.pending) S.cancel();
+    var u=new SpeechSynthesisUtterance(t); u.lang='ja-JP'; if(jaVoice) u.voice=jaVoice;
+    if(persona==='onee'){ u.rate=0.93; u.pitch=0.92; } else { u.rate=1.05; u.pitch=1; }
+    setTimeout(function(){ try{ S.speak(u); }catch(e){} }, 80);
+  }catch(e){}
 }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function bare(m){ return sayDir(m).replace(/です$/,'').replace(/します$/,'する'); }
+/* 案内のセリフ。o = {d:距離, m:曲がり角, lane:車線, where:場所, lm:目印, sig:信号か, x:高速の予告, dest:方面, next:次の案内} */
+function V(key,o){
+  o=o||{}; var dir=o.m?bare(o.m):'', lmp=o.lm?'、'+o.lm+'の角':'', sd=o.m?side(o.m):'';
+  var fin=o.m? (o.m.type==='turn'||o.m.type==='end of road')&&sd ? sd : dir : '';
+  var nx=o.next? o.next : '';
+  if(persona!=='onee'){
+    switch(key){
+      case 'start': return '案内を開始します。'+(nx?'およそ'+nx:'');
+      case 'pre': return o.d+'先、'+dir+'です。'+(o.lane?o.lane+'を走ってください。':'');
+      case 'near': return o.where? o.where+lmp+'を、'+dir+'です。' : 'まもなく、'+dir+'です。';
+      case 'final': return (o.sig?'この信号を':'ここを')+fin+'です。';
+      case 'hwy': return o.x+dir+'です。'+(o.dest?o.dest+'方面。':'')+(o.lane?o.lane+'を走ってください。':'');
+      case 'hwyFinal': return 'ここで'+dir+'です。';
+      case 'reroute': return '大丈夫です。すぐ戻れます。'+(nx?'およそ'+nx:'');
+      case 'soon': return 'まもなく目的地です。';
+      case 'arrived': return '目的地に到着しました。お疲れさまでした。';
+    }
+  }
+  switch(key){
+    case 'start': return pick(['ふふ、じゃあ出発しましょうか。今日はお姉さんが、ずっと隣で教えてあげる。','さ、行くわよ。ちゃんとお姉さんの言うこと、聞いてね？'])+(nx?' まずは'+nx.replace(/です。?$/,'よ。'):'');
+    case 'pre': return pick([o.d+'先、'+dir+'よ。'+(o.lane?o.lane+'に入っておいて。……そう、いい子。':'焦らなくていいからね。'),
+                             'ねえ、'+o.d+'先で'+dir+'。'+(o.lane?o.lane+'に、ゆっくり寄せて。上手にできるかしら？':'ちゃんと覚えておいてね？')]);
+    case 'near': return o.where? pick([o.where+lmp+'を'+dir+'。見逃しちゃ、ダメよ？','ほら、'+o.where+lmp+'。そこを'+dir+'よ。']) : pick(['もうすぐ'+dir+'。よそ見しないの。','ほら、もうすぐ'+dir+'よ。']);
+    case 'final': return pick(['はい、'+(o.sig?'この信号':'ここ')+'。'+fin+'……そう、上手。','今よ。'+fin+'。ふふ、完璧。']);
+    case 'hwy': return o.x+dir+'よ。'+(o.dest?o.dest+'方面ね。':'')+(o.lane?o.lane+'に、早めに寄っておいて。':'')+'慌てなくていいから。';
+    case 'hwyFinal': return pick(['ここよ。'+dir+'。……よくできました。','今よ、'+dir+'。上手じゃない。']);
+    case 'reroute': return pick(['あらあら、曲がらなかったの？ もう、しょうがない子ね。大丈夫、お姉さんがちゃんと連れ戻してあげる。','あら、行き過ぎちゃった？ 怒ってないわよ。すぐ戻れるから、ついてきて。'])+(nx?' まずは'+nx.replace(/です。?$/,'よ。'):'');
+    case 'soon': return pick(['もうすぐ着くわよ。……なんだか名残惜しいわね。','そろそろ到着。最後まで、気を抜いちゃダメよ？']);
+    case 'arrived': return pick(['到着よ。よく頑張ったわね、えらいえらい。また一緒にドライブしましょ？','はい、到着。今日も上手だったわよ。ご褒美は……ふふ、ナイショ。']);
+  }
+  return '';
+}
+$('persona').value=persona;
+$('persona').addEventListener('change',function(){ persona=this.value; try{localStorage.setItem('navi.persona',persona);}catch(e){} });
+$('voiceSel').addEventListener('change',function(){ voiceName=this.value; jaVoice=jaVoices.filter(function(v){return v.name===voiceName;})[0]||null; try{localStorage.setItem('navi.voice',voiceName);}catch(e){} });
+$('testVoice').addEventListener('click',function(){ var was=voiceOn; voiceOn=true; say(persona==='onee'?'ふふ、こんにちは。今日はどこに連れて行ってほしいの？':'音声案内のテストです。この声で案内します。'); voiceOn=was; });
 function unlockSpeech(){ try{ var u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u);}catch(e){} }
 function syncVoice(){ $('voiceBtn').innerHTML=icon(voiceOn?'voice':'mute',22); $('voiceBtn').setAttribute('aria-label',voiceOn?'音声案内オン':'音声案内オフ'); }
 
@@ -440,7 +507,7 @@ function onFix(p,hdg,spd,acc){
   here=p; accuracy=acc; speed=spd>=0?spd:speed;
   if(hdg!=null && !isNaN(hdg) && speed>1.5) heading=hdg;
   if(!carMarker) carMarker=new maplibregl.Marker({element:carEl,rotationAlignment:'map'}).setLngLat(p).addTo(map);
-  carMarker.setLngLat(p);
+  if(!nav) carMarker.setLngLat(p);
   if(!gpsOk){ gpsOk=true; $('gpsDot').classList.add('on'); $('gpsMsg').lastChild.textContent='現在地を取得しました'; if(!nav) map.jumpTo({center:p,zoom:15}); }
   if(nav) navUpdate(); else carMarker.setRotation(heading);
 }
@@ -529,7 +596,7 @@ function startNav(isDemo){
   setRouteLines(route.coords,[]);
   requestWake();
   if(isDemo) startDemo(); else if(!here) toast('現在地を待っています…');
-  say('案内を開始します。'+(route.man[0]&&route.man[0].type!=='arrive'? 'およそ'+roundSay(route.man[0].s)+'先、'+sayDir(route.man[0]) : ''));
+  say(V('start',{next:(route.man[0]&&route.man[0].type!=='arrive')? roundSay(route.man[0].s)+'先、'+sayDir(route.man[0])+'。' : ''}));
   if(here) navUpdate();
 }
 function roundSay(d){ return d>=1000? (Math.round(d/100)/10)+'キロ' : (Math.round(d/50)*50)+'メートル'; }
@@ -562,6 +629,9 @@ function nextMan(){ var R=nav.route; while(nav.idx<R.man.length-1 && R.man[nav.i
 
 function navUpdate(){
   if(!nav||!here) return;
+  try{ navLogic(); }catch(e){ showBug(e); }
+}
+function navLogic(){
   var R=nav.route, sn=R.snap(here,nav.snapI);
   nav.snapI=sn.i; nav.off=sn.d;
   if(sn.s>=nav.s-30 || sn.d<20) nav.s=sn.s;
@@ -571,6 +641,10 @@ function navUpdate(){
   if(!onRoute && !nav.rerouting){ nav.offCount++; } else if(onRoute) nav.offCount=0;
   if(nav.offCount>=(demo?2:3) && !nav.rerouting && dest){ reroute(); }
 
+  var useH = speed>1.5? heading : sn.bearing;
+  if(onRoute && Math.abs(angDiff(useH,sn.bearing))<60) useH=sn.bearing;
+  nav.fix={s:nav.s, p:here, t:performance.now(), v:Math.max(0,speed), on:onRoute, h:useH};
+
   var m=nextMan(), d=Math.max(0,m.s-nav.s);
   var next=R.man[nav.idx+1];
   if(m.type!=='arrive' && d<1500) fetchInfo(R,m);
@@ -579,41 +653,32 @@ function navUpdate(){
   /* 到着 */
   if(m.type==='arrive' && (d<25 || dist(here,R.coords[R.coords.length-1])<25)){ arrive(); return; }
 
-  /* 地図の追従 */
-  var useH = speed>1.5? heading : sn.bearing;
-  if(onRoute && Math.abs(angDiff(useH,sn.bearing))<60) useH=sn.bearing;
-  if(!demo) heading=useH;
-  carMarker.setRotation(useH);
-  if(follow){
-    var z = speed>22?15.2: speed>14?16: 17;
-    map.easeTo({center:here, bearing:useH, pitch:50, zoom:z, padding:{top:Math.round(window.innerHeight*0.38),bottom:190,left:0,right:0}, duration:demo?260:950, easing:function(t){return t;}});
-  }
-
   /* 表示 */
   var recovering = Date.now()<nav.recoverUntil;
-  var finTh = m.hwy? 160 : Math.max(35, speed*3.5);
+  var realV = demo? speed/DEMO_X : speed;
+  var finTh = m.hwy? 160 : Math.max(35, realV*3.5);
   var showFinal = !recovering && m.type!=='arrive' && d<=finTh;
-  var key=nav.idx+'|'+R.L;
-  if(key!==nav.lastTop){ $('top').innerHTML=icon(iconOf(m),56,'#fff',2.8)+'<div style="min-width:0"><div class="dist" id="topDist"></div><div class="label">'+esc(roadLabel(m))+'</div></div>'; nav.lastTop=key; }
-  $('topDist').innerHTML=fmtDist(d);
-
-  var pf=panelFor(R,m,next,d,recovering), pk=pf?pf.key:'';
-  if(pk!==nav.lastPanel){ nav.lastPanel=pk; var pn=$('panel'); if(pf){pn.className=pf.cls; pn.innerHTML=pf.html; pn.hidden=false;} else pn.hidden=true; }
-
-  var fin=$('final');
-  if(showFinal){
-    var pp=placePhrase(m,nav.s);
-    var fk=nav.idx+'F'+R.L;
-    if(nav.lastFinal!==fk){
-      var la=laneAdvice(m,next);
-      fin.innerHTML='<span class="pill">'+(m.hwy?'ここです':(pp&&pp.atSignal?'この信号です':'ここです'))+'</span>'+icon(iconOf(m),190,'#fff',2.6)+'<span class="word">'+esc(word(m))+'</span><span class="d" id="finD"></span>'+
-        (la?'<span style="font-size:17px;font-weight:700">'+esc(la.text)+'</span>':'')+
-        (next&&next.type!=='arrive'&&next.s-m.s<600?'<span class="next">'+icon(iconOf(next),26,'#FFC75A',2.6)+'曲がったら：'+Math.round((next.s-m.s)/10)*10+'m先で'+esc(word(next))+'</span>':'');
-      nav.lastFinal=fk;
+  nav.m=m; nav.showFinal=showFinal;
+  var key=nav.idx+'|'+R.L+'|'+(showFinal?'F':'');
+  if(key!==nav.lastTop){
+    var top=$('top');
+    if(showFinal){
+      var pp=placePhrase(m,nav.s), la=laneAdvice(m,next);
+      var sd=side(m), what = (pp&&pp.atSignal?'この信号を':'ここを')+(sd&&(m.type==='turn'||m.type==='end of road')? sd : word(m));
+      top.className='top big';
+      top.innerHTML='<div class="bigrow">'+icon(iconOf(m),92,'#fff',2.8)+'<div style="min-width:0"><div class="word">'+esc(what)+'</div><div class="dist" id="topDist"></div></div></div>'+
+        (la?'<div class="lanetxt">'+icon('check',18,'#fff',2.8)+esc(la.text)+'</div>':'')+
+        (next&&next.type!=='arrive'&&next.s-m.s<600?'<div class="next">'+icon(iconOf(next),24,'#FFC75A',2.6)+'曲がったら '+Math.round((next.s-m.s)/10)*10+'m先で'+esc(word(next))+'</div>':'');
+    } else {
+      top.className='top';
+      top.innerHTML=icon(iconOf(m),56,'#fff',2.8)+'<div style="min-width:0"><div class="dist" id="topDist"></div><div class="label">'+esc(roadLabel(m))+'</div></div>';
     }
-    $('finD').textContent='あと '+Math.round(d)+' m';
-    fin.hidden=false;
-  } else { fin.hidden=true; nav.lastFinal=''; }
+    nav.lastTop=key; nav.lastDistTxt='';
+  }
+
+  var pf=showFinal? null : panelFor(R,m,next,d,recovering), pk=pf?pf.key:'';
+  if(pk!==nav.lastPanel){ nav.lastPanel=pk; var pn=$('panel'); if(pf){pn.className=pf.cls; pn.innerHTML=pf.html; pn.hidden=false;} else pn.hidden=true; }
+  nav.padTop=$('stack').offsetHeight+28;
 
   speak(R,m,next,d,finTh,recovering);
 
@@ -625,6 +690,40 @@ function navUpdate(){
   var lim=R.maxspeed[sn.i];
   var le=$('limit'); if(lim){ le.textContent=lim; le.removeAttribute('data-none'); } else { le.textContent='--'; le.setAttribute('data-none',''); }
 }
+
+/* ===== なめらかな表示（毎フレーム、次の位置を予測して動かす） ===== */
+var lastFrame=0;
+function frame(ts){
+  requestAnimationFrame(frame);
+  var dt=lastFrame? Math.min(0.1,(ts-lastFrame)/1000) : 0; lastFrame=ts;
+  if(!nav||!nav.fix||!carMarker) return;
+  try{
+    var R=nav.route, f=nav.fix, el=(performance.now()-f.t)/1000, p, br, sp=f.s;
+    if(f.on){ sp=Math.min(R.L, f.s+f.v*Math.min(el,1.5)); var a=R.at(sp); p=a.p; br=a.bearing; }
+    else { p=f.p; br=f.h; }
+    nav.sPred=sp;
+    if(!nav.disp) nav.disp={p:p.slice(), b:br, z:17};
+    var D=nav.disp, k=Math.min(1,dt*7);
+    D.p=[D.p[0]+(p[0]-D.p[0])*k, D.p[1]+(p[1]-D.p[1])*k];
+    D.b=(D.b+angDiff(D.b,br)*Math.min(1,dt*3)+360)%360;
+    var zt=f.v>22?15.2: f.v>14?16:17; D.z+=(zt-D.z)*Math.min(1,dt*1.2);
+    carMarker.setLngLat(D.p); carMarker.setRotation(D.b);
+    if(follow) map.jumpTo({center:D.p, bearing:D.b, pitch:50, zoom:D.z, padding:{top:nav.padTop||200,bottom:200,left:0,right:0}});
+    var td=$('topDist');
+    if(td&&nav.m){
+      var dd=Math.max(0,nav.m.s-sp), txt=nav.showFinal? 'あと '+Math.round(dd)+'<small> m</small>' : fmtDist(dd);
+      if(txt!==nav.lastDistTxt){ td.innerHTML=txt; nav.lastDistTxt=txt; }
+    }
+  }catch(e){ showBug(e); }
+}
+requestAnimationFrame(frame);
+
+var bugShown=false;
+function showBug(e){
+  if(bugShown) return; bugShown=true;
+  toast('不具合が起きました。この画面をスクショして送ってください：'+String(e&&e.message||e).slice(0,140),20000);
+}
+window.addEventListener('error',function(ev){ showBug(ev.error||ev.message); });
 
 function panelFor(R,m,next,d,recovering){
   if(recovering) return {key:'rec'+R.L, cls:'panel accent', html:nav.recoverHTML};
@@ -639,13 +738,13 @@ function panelFor(R,m,next,d,recovering){
     return {key:'hw'+nav.idx+bucket, cls:'panel accent', html:sign+'<h2>'+esc(word(m))+'へ'+(la?'：'+esc(la.text):'')+'</h2>'+(la?lanesHTML(la,m):'<p>'+esc(side(m)||'')+(side(m)?'側の車線に早めに寄っておくと安心です。':'')+'</p>')+cnt};
   }
   if(d<=260){
-    var pp=placePhrase(m,nav.s), trap=trapText(R,m);
+    var pp=placePhrase(m,nav.s); if(m.trap===undefined) m.trap=trapText(R,m); var trap=m.trap;
     var title = pp? pp.where+(pp.lm?'、'+pp.lm+'の角':'')+'を'+(side(m)||word(m)) : Math.round(d/10)*10+'m先を'+word(m);
-    return {key:'v'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:'<div class="junction">'+junctionSVG(m)+'</div><h2>'+esc(title)+'</h2>'+(trap?'<div class="trap">'+trap+'</div>':'')};
+    return {key:'v'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:'<div class="jrow"><div class="junction">'+junctionSVG(m)+'</div><h2>'+esc(title)+'</h2></div>'+(trap?'<div class="trap">'+trap+'</div>':'')};
   }
   if(d<=800){
     var la2=laneAdvice(m,next);
-    if(la2) return {key:'l'+nav.idx, cls:'panel accent', html:'<h2>'+esc(la2.text)+'へ</h2><p>'+la2.why+'</p>'+lanesHTML(la2,m)+'<p style="font-size:12px;color:var(--muted)">青＝走るべき車線</p>'};
+    if(la2) return {key:'l'+nav.idx, cls:'panel accent', html:'<h2>'+esc(la2.text)+'へ</h2>'+lanesHTML(la2,m)+'<p>'+la2.why+'</p>'};
   }
   return null;
 }
@@ -653,18 +752,18 @@ function panelFor(R,m,next,d,recovering){
 function speak(R,m,next,d,finTh,recovering){
   if(recovering) return;
   var sp=m.spoken, la;
-  if(m.type==='arrive'){ if(d<=300&&!sp.a){sp.a=1; say('まもなく目的地です。');} return; }
+  if(m.type==='arrive'){ if(d<=300&&!sp.a){sp.a=1; say(V('soon'));} return; }
   if(m.hwy){
     [[2000,'2キロ先、'],[1000,'1キロ先、'],[500,'500メートル先、']].forEach(function(x){
-      if(d<=x[0] && d>x[0]*0.6 && !sp[x[0]]){ sp[x[0]]=1; la=laneAdvice(m,next); say(x[1]+sayDir(m)+(m.dest?m.dest.split(/[;,]/)[0]+'方面。':'。')+(la&&x[0]>=1000?la.text+'を走ってください。':'')); }
+      if(d<=x[0] && d>x[0]*0.6 && !sp[x[0]]){ sp[x[0]]=1; la=laneAdvice(m,next); say(V('hwy',{x:x[1],m:m,dest:m.dest?m.dest.split(/[;,]/)[0]:'',lane:la&&x[0]>=1000?la.text:''})); }
     });
-    if(d<=finTh && !sp.f){ sp.f=1; say('ここで'+sayDir(m)); }
+    if(d<=finTh && !sp.f){ sp.f=1; say(V('hwyFinal',{m:m})); }
     return;
   }
-  if(d<=800 && d>320 && !sp.pre){ sp.pre=1; la=laneAdvice(m,next); say(roundSay(d)+'先、'+sayDir(m)+(la?la.text+'を走ってください。':'')); }
+  if(d<=800 && d>320 && !sp.pre){ sp.pre=1; la=laneAdvice(m,next); say(V('pre',{d:roundSay(d),m:m,lane:la?la.text:''})); }
   if(d<=260 && d>finTh && !sp.near){ sp.near=1; var pp=placePhrase(m,nav.s);
-    say(pp? pp.where+(pp.lm?'、'+pp.lm+'の角':'')+'を、'+sayDir(m) : 'まもなく、'+sayDir(m)); }
-  if(d<=finTh && !sp.f){ sp.f=1; var p2=placePhrase(m,nav.s); say((p2&&p2.atSignal?'この信号を':'ここを')+sayDir(m).replace('方向です','です')); }
+    say(V('near',{m:m,where:pp?pp.where:'',lm:pp?pp.lm:''})); }
+  if(d<=finTh && !sp.f){ sp.f=1; var p2=placePhrase(m,nav.s); say(V('final',{m:m,sig:!!(p2&&p2.atSignal)})); }
   if(nav.lastPassed!==nav.idx && next && d<5){ nav.lastPassed=nav.idx; }
 }
 
@@ -673,12 +772,12 @@ function reroute(){
   var oldEta=Date.now()+nav.route.duration*Math.max(0,nav.route.L-nav.s)/nav.route.L*1000;
   fetchRoutes(here,dest.p,heading).then(function(rs){
     var r=rs[0], newEta=Date.now()+r.duration*1000, late=Math.max(0,Math.round((newEta-oldEta)/60000));
-    nav.route=r; route=r; nav.idx=0; nav.snapI=0; nav.s=0; nav.offCount=0; nav.lastTop=''; nav.lastPanel=''; nav.lastFinal='';
+    nav.route=r; route=r; nav.idx=0; nav.snapI=0; nav.s=0; nav.offCount=0; nav.fix=null; nav.lastTop=''; nav.lastPanel=''; nav.lastFinal='';
     setRouteLines(r.coords,[]);
     var m0=r.man[0];
     nav.recoverHTML='<h2>大丈夫、すぐ戻れます</h2><p>新しいルートに自動で切り替えました。'+(m0&&m0.type!=='arrive'?'まず <b>'+Math.round(m0.s/10)*10+'m先で'+esc(word(m0))+'</b>。':'')+'</p><p>到着は <b style="color:var(--warn)">'+(late<=0?'ほぼ変わりません':'約'+late+'分遅れ')+'</b>（'+fmtTime(new Date(newEta))+' 着）</p>';
     nav.recoverUntil=Date.now()+7000;
-    say('大丈夫です。すぐ戻れます。'+(m0&&m0.type!=='arrive'?'およそ'+roundSay(m0.s)+'先、'+sayDir(m0):''));
+    say(V('reroute',{next:(m0&&m0.type!=='arrive')? roundSay(m0.s)+'先、'+sayDir(m0)+'。' : ''}));
     if(demo){ demo.mode='route'; demo.s=0; demo.mistake=false; }
   }).catch(function(){ toast('ルートを再検索できませんでした。電波の良い場所で自動でやり直します。'); })
   .then(function(){ if(nav) nav.rerouting=false; navUpdate(); });
@@ -686,12 +785,13 @@ function reroute(){
 
 function arrive(){
   var mins=Math.max(1,Math.round((Date.now()-nav.startAt)/60000));
-  say('目的地に到着しました。お疲れさまでした。');
+  say(V('arrived'));
   $('arrivedText').textContent=(dest?dest.name+' ・ ':'')+'走行 '+mins+'分'+(nav.mistakes?' ・ 途中で'+nav.mistakes+'回ルートを外れましたが、すぐ戻れました。':'');
   $('arrived').hidden=false; $('final').hidden=true; nav=null; stopDemo(); releaseWake();
 }
 
 /* ===== デモ走行（ルートに沿って位置を動かす） ===== */
+var DEMO_X=2;
 function startDemo(){
   var start=route.coords[0];
   demo={mode:'route', s:0, v:0, p:start, h:route.at(0).bearing, mistake:false, straightLeft:0};
@@ -699,9 +799,10 @@ function startDemo(){
   demo.timer=setInterval(demoTick,250);
 }
 function stopDemo(){ if(demo){ clearInterval(demo.timer); demo=null; } }
-function demoTick(){
+function demoTick(){ try{ demoStep(); }catch(e){ showBug(e); } }
+function demoStep(){
   if(!demo||!nav) return;
-  var R=nav.route, dt=0.25*4; /* 4倍速 */
+  var R=nav.route, dt=0.25*DEMO_X; /* 早送り */
   if(demo.mode==='route'){
     var m=nextMan(), d=m.s-demo.s, lim=R.maxspeed[R.at(demo.s).i];
     var target=(lim? lim/3.6 : (m.hwy?22:12));
@@ -718,7 +819,7 @@ function demoTick(){
     } else { demo.v=Math.max(0,demo.v-2); }
   }
   heading=demo.h;
-  onFix(demo.p,demo.h,demo.v,5);
+  onFix(demo.p,demo.h,demo.v*DEMO_X,5);
   if(demo && demo.mode==='route'){ nav && (nav.s=Math.max(nav.s, demo.s-1)); }
 }
 })();
