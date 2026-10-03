@@ -89,6 +89,14 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .top.big .dist{font-size:30px;margin-top:6px}
 .lanetxt{display:flex;gap:8px;align-items:center;font-size:16px;font-weight:700;background:rgba(0,0,0,.22);border-radius:12px;padding:8px 12px}
 .top .next{background:var(--ground);border-radius:12px;padding:8px 12px;font-size:15px;font-weight:700;display:flex;gap:8px;align-items:center}
+.photo{position:relative;border-radius:12px;overflow:hidden;background:#1A2129;aspect-ratio:2/1;max-width:100%}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.pbadge{position:absolute;left:8px;bottom:8px;right:8px;background:rgba(20,95,58,.92);color:#fff;font-weight:700;padding:6px 10px;border-radius:10px;display:flex;gap:6px;align-items:center;font-size:15px;line-height:1.3}
+.laneline{display:flex;gap:6px;align-items:center;font-size:15px;font-weight:700;color:#8CC4FF}
+details.sv{background:var(--surface);border-radius:14px;padding:10px 14px;font-size:14px}
+details.sv summary{cursor:pointer;font-weight:700;padding:6px 0}
+details.sv .row{margin-top:8px}
+details.sv input{flex:1;min-width:0;height:48px;border-radius:12px;border:2px solid var(--line);background:var(--ground);color:var(--text);font-size:15px;padding:0 10px}
 .jrow{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:center}
 #bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--ground);border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 24px rgba(0,0,0,.5)}
 .stats{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
@@ -140,6 +148,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
     <select id="voiceSel" aria-label="声の種類"></select>
     <button class="btn" type="button" id="testVoice">試す</button>
   </div>
+  <details class="sv" id="svBox">
+    <summary id="svSum">曲がる場所の実写写真：未設定</summary>
+    <p class="note">Googleストリートビューの写真を、曲がる800m手前から表示します。自分用のキー（APIキー）を入れると使えます。キーはこのスマホの中だけに保存され、GitHubには載りません。</p>
+    <div class="row"><input id="svKey" type="password" autocomplete="off" placeholder="APIキーを貼り付け" aria-label="APIキー"><button class="btn primary" type="button" id="svSave">保存</button></div>
+  </details>
   <p class="msg err" id="err" hidden></p>
   <p class="note">地図 © OpenStreetMap contributors ／ ルート OSRM ／ 目印・信号 Overpass API。個人での試用向けの無料サーバーを使っています。</p>
 </section>
@@ -268,6 +281,26 @@ Route.prototype.build=function(){
   r.man=man;
 };
 
+/* ===== 曲がる場所の実写写真（Googleストリートビュー） ===== */
+function fetchPhoto(R,m){
+  if(!svKey||m.photo!==undefined||m.photoLoading||m.type==='arrive') return;
+  m.photoLoading=true;
+  var back=R.at(Math.max(0,m.s-40)), hd=brg(back.p,m.loc);
+  if(dist(back.p,m.loc)<8) hd=back.bearing;
+  var loc=back.p[1].toFixed(6)+','+back.p[0].toFixed(6);
+  fetch('https://maps.googleapis.com/maps/api/streetview/metadata?location='+loc+'&radius=35&source=outdoor&key='+encodeURIComponent(svKey))
+  .then(function(r){return r.json();}).then(function(j){
+    if(j.status==='OK'){
+      var pid=j.pano_id?('pano='+encodeURIComponent(j.pano_id)):('location='+loc);
+      var url='https://maps.googleapis.com/maps/api/streetview?size=640x320&'+pid+'&heading='+Math.round(hd)+'&fov=85&pitch=-2&source=outdoor&key='+encodeURIComponent(svKey);
+      var img=new Image(); img.onload=function(){ m.photo=url; }; img.onerror=function(){ m.photo=false; }; img.src=url;
+    } else { m.photo=false; if(j.status==='REQUEST_DENIED') toast('写真のキーが使えません：'+(j.error_message||'設定を確認してください'),8000); }
+  }).catch(function(){ m.photo=false; }).then(function(){ m.photoLoading=false; });
+}
+function photoHTML(m,label){
+  return '<div class="photo"><img src="'+m.photo+'" alt="曲がる場所の景色"><span class="pbadge">'+icon(iconOf(m),24,'#fff',2.8)+esc(label)+'</span></div>';
+}
+
 /* ===== 案内文 ===== */
 function side(m){var md=m.mod||''; return md.indexOf('right')>=0?'右':md.indexOf('left')>=0?'左':'';}
 function iconOf(m){
@@ -321,9 +354,9 @@ function laneIcon(ind,m){
   return pick.indexOf('right')>=0?'right':'left';
 }
 function laneAdvice(m,next){
-  var L=m.lanes; if(!L||L.length<2) return null;
-  var valid=[]; L.forEach(function(l,i){ if(l.valid===true||l.valid==='true') valid.push(i); });
-  if(!valid.length||valid.length===L.length) return null;
+  var L=m.lanes, valid=[];
+  if(L&&L.length>=2) L.forEach(function(l,i){ if(l.valid===true||l.valid==='true') valid.push(i); });
+  if(!L||L.length<2||!valid.length||valid.length===L.length) return genericLane(m,next);
   var rec=valid.slice(), why='';
   if(next && next.type!=='arrive' && next.s-m.s<400 && valid.length>1){
     var nm=next.mod||'';
@@ -339,7 +372,23 @@ function laneAdvice(m,next){
   else text='真ん中の車線';
   return {L:L, rec:rec, n:n, text:text, why: why || ('この道は'+n+'車線。曲がれる車線は限られています。')};
 }
+/* 車線データがない道：日本の交通ルール（右折は右端、左折は左端）から案内する */
+function genericLane(m,next){
+  var t=m.type, md=m.mod||'', sd=side(m);
+  if(t==='arrive'||!sd||md==='straight'||md==='uturn'||t.indexOf('round')>=0) return null;
+  var slight = md.indexOf('slight')===0 || t==='fork' || t==='merge' || t==='on ramp';
+  var text = slight? sd+'寄りの車線' : '一番'+sd+'の車線';
+  var why = slight? sd+'方向に分かれるので、'+sd+'寄りを走っておくと安心です。' : (sd==='右'?'右折':'左折')+'は一番'+sd+'の車線から曲がります。早めに寄っておきましょう。';
+  if(next && next.type!=='arrive' && next.s-m.s<300){ var ns=side(next); if(ns && ns!==sd) why+=' 曲がってすぐ'+Math.round((next.s-m.s)/10)*10+'m先で'+word(next)+'なので、曲がった後は'+ns+'寄りへ。'; }
+  return {L:null, rec:null, n:0, text:text, why:why, generic:true, sd:sd};
+}
 function lanesHTML(a,m){
+  if(!a.L){
+    var n=3, h='<div class="lanes" style="grid-template-columns:repeat(3,minmax(0,1fr))">';
+    for(var i=0;i<n;i++){ var on = a.sd==='右'? i===n-1 : i===0; if(a.text.indexOf('寄り')>=0) on = a.sd==='右'? i>=1 : i<=1;
+      h+='<div class="lane'+(on?' rec':'')+'">'+icon(on?iconOf(m):'straight',28,on?'#0B1520':'#5D6B78',2.6)+'</div>'; }
+    return h+'</div>';
+  }
   var h='<div class="lanes" style="grid-template-columns:repeat('+a.n+',minmax(0,1fr))">';
   a.L.forEach(function(l,i){ var on=a.rec.indexOf(i)>=0; h+='<div class="lane'+(on?' rec':'')+'">'+icon(laneIcon(l.indications||[],m),28,on?'#0B1520':'#5D6B78',2.6)+'</div>'; });
   return h+'</div>';
@@ -417,7 +466,8 @@ function showErr(t){var e=$('err'); e.textContent=t; e.hidden=!t;}
 function toast(t,ms){var e=$('toast'); e.textContent=t; e.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(function(){e.hidden=true;},ms||5000);}
 
 /* ===== 音声 ===== */
-var jaVoices=[], jaVoice=null, persona='std', voiceName='';
+var jaVoices=[], jaVoice=null, persona='std', voiceName='', svKey='';
+try{ svKey=localStorage.getItem('navi.svkey')||''; }catch(e){}
 try{ persona=localStorage.getItem('navi.persona')||'std'; voiceName=localStorage.getItem('navi.voice')||''; }catch(e){}
 function pickVoice(){
   try{
@@ -502,6 +552,9 @@ function chatter(R,m,next,d,realV,lim){
   nav.stopSince=0; nav.stopSaid=false;
   if(quiet>150000 && d>700 && now-(nav.chatAt||0)>180000){ nav.chatAt=now; say(V('chat')); }
 }
+function syncSv(){ $('svSum').textContent='曲がる場所の実写写真：'+(svKey?'オン':'未設定'); $('svKey').value=svKey; }
+$('svSave').addEventListener('click',function(){ svKey=$('svKey').value.trim(); try{localStorage.setItem('navi.svkey',svKey);}catch(e){} syncSv(); toast(svKey?'写真のキーを保存しました':'写真をオフにしました',3000); });
+syncSv();
 $('persona').value=persona;
 $('persona').addEventListener('change',function(){ persona=this.value; try{localStorage.setItem('navi.persona',persona);}catch(e){} });
 $('voiceSel').addEventListener('change',function(){ voiceName=this.value; jaVoice=jaVoices.filter(function(v){return v.name===voiceName;})[0]||null; try{localStorage.setItem('navi.voice',voiceName);}catch(e){} });
@@ -678,6 +731,7 @@ function navLogic(){
   var next=R.man[nav.idx+1];
   if(m.type!=='arrive' && d<1500) fetchInfo(R,m);
   if(next && next.type!=='arrive' && next.s-nav.s<1500) fetchInfo(R,next);
+  if(m.type!=='arrive' && d<1600) fetchPhoto(R,m);
 
   /* 到着 */
   if(m.type==='arrive' && (d<25 || dist(here,R.coords[R.coords.length-1])<25)){ arrive(); return; }
@@ -770,11 +824,13 @@ function panelFor(R,m,next,d,recovering){
   if(d<=260){
     var pp=placePhrase(m,nav.s); if(m.trap===undefined) m.trap=trapText(R,m); var trap=m.trap;
     var title = pp? pp.where+(pp.lm?'、'+pp.lm+'の角':'')+'を'+(side(m)||word(m)) : Math.round(d/10)*10+'m先を'+word(m);
-    return {key:'v'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:'<div class="jrow"><div class="junction">'+junctionSVG(m)+'</div><h2>'+esc(title)+'</h2></div>'+(trap?'<div class="trap">'+trap+'</div>':'')};
+    var lv=laneAdvice(m,next), laneLine = lv? '<div class="laneline">'+icon('check',16,'currentColor',2.8)+esc(lv.text)+'</div>' : '';
+    if(m.photo) return {key:'vp'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:photoHTML(m,title)+laneLine+(trap?'<div class="trap">'+trap+'</div>':'')};
+    return {key:'v'+nav.idx+(pp?pp.where+pp.lm:''), cls:'panel', html:'<div class="jrow"><div class="junction">'+junctionSVG(m)+'</div><h2>'+esc(title)+'</h2></div>'+laneLine+(trap?'<div class="trap">'+trap+'</div>':'')};
   }
   if(d<=800){
     var la2=laneAdvice(m,next);
-    if(la2) return {key:'l'+nav.idx, cls:'panel accent', html:'<h2>'+esc(la2.text)+'へ</h2>'+lanesHTML(la2,m)+'<p>'+la2.why+'</p>'};
+    if(la2||m.photo) return {key:'l'+nav.idx+(m.photo?'p':''), cls:'panel accent', html:(m.photo?photoHTML(m,'この先を'+word(m)):'')+(la2?'<h2>'+esc(la2.text)+'へ</h2>'+lanesHTML(la2,m)+'<p>'+la2.why+'</p>':'')};
   }
   return null;
 }
